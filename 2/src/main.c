@@ -1,35 +1,23 @@
 //
 // Created by tsaanstu on 25.03.19.
 //
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <signal.h>
-#include <string.h>
-
-#define BUF_SIZE 256
+#include "ft.h"
+#include "st.h"
 
 unsigned short int modes[2];
 pthread_t itid, ctid;
 pthread_mutex_t mutx1, mutx2;
 pthread_cond_t condx1, condx2;
 char str_in_first_thread[BUF_SIZE];
+unsigned int first_len;
+unsigned int second_len;
 
 void read_commands();
-
-_Bool init_work_mode(int *mode);
-
-void *first_thread(void *arg_p);
-
-void *second_thread(void *arg_p);
-
 
 int main(int argc, char **argv) {
     pthread_attr_t pattr;
     int ret;
-    write(1, "P start\n", 8);
+    write(1, "Main thread start\n", 17);
     pthread_attr_init(&pattr);
     pthread_attr_setscope(&pattr, PTHREAD_SCOPE_SYSTEM);
     pthread_attr_setdetachstate(&pattr, PTHREAD_CREATE_JOINABLE);
@@ -46,7 +34,7 @@ int main(int argc, char **argv) {
 
     signal(SIGINT, read_commands);
     while (1) {
-        read(0, str_in_first_thread, BUF_SIZE);
+        first_len = read(0, str_in_first_thread, BUF_SIZE);
         if (str_in_first_thread[0] == '~') {
             exit(0);
         }
@@ -56,29 +44,9 @@ int main(int argc, char **argv) {
     }
 }
 
-void *first_thread(void *arg_p) {
-    while (1) {
-        switch (modes[0]) {
-            default:
-                printf("1 thread kek\n");
-            break;
-        }
-    }
-}
-
-void *second_thread(void *arg_p) {
-    while (1) {
-        switch (modes[1]) {
-            default:
-                printf("2 thread lol\n");
-            break;
-        }
-    }
-}
-
 void read_commands() {
     char buf[3];
-    char *answer[] = {"\nsignal \"ctrl+c\" is processed\n",
+    char *answer[] = {"\n\n\nsignal \"ctrl+c\" is processed\n",
                       "input first and second thread mode (two 1-4 int numbers)\nExample: 14\n",
                       "input error\n"
     };
@@ -94,5 +62,4 @@ void read_commands() {
         }
         modes[i] = mode;
     }
-    printf("%d %d\n", modes[0], modes[1]);
 }
