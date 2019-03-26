@@ -5,8 +5,6 @@
 #ifndef SOFTWARE_SYSTEMS_LABS_FT_H
 #define SOFTWARE_SYSTEMS_LABS_FT_H
 
-#include "definitions.h"
-
 void *first_thread(void *arg_p);
 void ft_translator();
 void invert();

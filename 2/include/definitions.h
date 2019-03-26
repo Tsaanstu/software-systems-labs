@@ -24,4 +24,6 @@ inline char str_in_second_thread[BUF_SIZE];
 inline unsigned int first_len;
 inline unsigned int second_len;
 
+static const char input_data_message[] = "input in main thread: ";
+
 #endif //SOFTWARE_SYSTEMS_LABS_DEFINITIONS_H

@@ -2,10 +2,11 @@
 // Created by tsaanstu on 25.03.19.
 //
 
+#include "definitions.h"
 #include "st.h"
 
 void *second_thread(void *arg_p) {
-  write(0, "start: second thread\n", 21);
+  write(1, "start: second thread\n", 21);
   while (1) {
     switch (modes[1]) {
       case 1:st_translator();

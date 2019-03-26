@@ -1,0 +1,20 @@
+start: main thread
+start: first thread
+start: second thread
+
+
+
+signal "ctrl+c" is processed
+input first and second thread mode (two 1-4 int numbers)
+Example: 14
+first thread mode: 4
+second thread mode: 1
+אבגדהו
+second thread mode: 1
+
+
+
+signal "ctrl+c" is processed
+input first and second thread mode (two 1-4 int numbers)
+Example: 14
+input error

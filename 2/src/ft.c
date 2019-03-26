@@ -2,10 +2,16 @@
 // Created by tsaanstu on 25.03.19.
 //
 
+#include "definitions.h"
 #include "ft.h"
 
+void main_thread_input_debug_message(char* str) {
+  char *message = (char*)malloc(strlen(str) + strlen(input_data_message));
+
+}
+
 void *first_thread(void *arg_p) {
-  write(0, "start: first thread\n", 20);
+  write(1, "start: first thread\n", 20);
   while (1) {
     switch (modes[0]) {
       case 1:ft_translator();
@@ -29,6 +35,10 @@ void ft_translator() {
     pthread_mutex_unlock(&mutx1);
     return;
   }
+
+  write(1, input_data_message, strlen(input_data_message));
+  write(1, str_in_first_thread, strlen(str_in_first_thread));
+
   write(1, str, strlen(str));
   second_len = first_len;
   first_len = 0;
@@ -52,6 +62,10 @@ void invert() {
     pthread_mutex_unlock(&mutx1);
     return;
   }
+
+  write(1, input_data_message, strlen(input_data_message));
+  write(1, str_in_first_thread, strlen(str_in_first_thread));
+
   write(1, str, strlen(str));
   second_len = first_len;
   first_len = 0;
@@ -82,6 +96,10 @@ void replace_adjacent_characters() {
     pthread_mutex_unlock(&mutx1);
     return;
   }
+
+  write(1, input_data_message, strlen(input_data_message));
+  write(1, str_in_first_thread, strlen(str_in_first_thread));
+
   write(1, str, strlen(str));
   second_len = first_len;
   first_len = 0;
@@ -113,6 +131,10 @@ void to_koi() {
     pthread_mutex_unlock(&mutx1);
     return;
   }
+
+  write(1, input_data_message, strlen(input_data_message));
+  write(1, str_in_first_thread, strlen(str_in_first_thread));
+
   write(1, str, strlen(str));
   second_len = first_len;
   first_len = 0;

@@ -2,6 +2,7 @@
 // Created by tsaanstu on 25.03.19.
 //
 
+#include "definitions.h"
 #include "ft.h"
 #include "st.h"
 
@@ -34,6 +35,7 @@ int main(int argc, char **argv) {
   }
 
   signal(SIGINT, read_commands);
+  pthread_mutex_lock(&mutx1);
   while (1) {
     first_len = read(0, str_in_first_thread, BUF_SIZE);
     if (str_in_first_thread[0] == '~') {
