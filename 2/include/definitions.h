@@ -13,6 +13,7 @@
 #include <pthread.h>
 #include <signal.h>
 #include <string.h>
+#include <ctype.h>
 
 inline unsigned short int modes[2];
 inline pthread_t itid, ctid;

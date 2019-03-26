@@ -9,5 +9,8 @@
 
 void *first_thread(void *arg_p);
 void ft_translator();
+void invert();
+void replace_adjacent_characters();
+void to_koi();
 
 #endif //SOFTWARE_SYSTEMS_LABS_FT_H
