@@ -5,9 +5,13 @@
 #include "definitions.h"
 #include "ft.h"
 
-void main_thread_input_debug_message(char* str) {
-  char *message = (char*)malloc(strlen(str) + strlen(input_data_message));
-
+void main_thread_input_debug_message(char *str) {
+  char *message = (char *) malloc(strlen(str) + strlen(input_data_message));
+  strcat(message, input_data_message);
+  strcat(message, str);
+  if (message != NULL) {
+    write(1, message, strlen(message));
+  }
 }
 
 void *first_thread(void *arg_p) {
@@ -36,8 +40,7 @@ void ft_translator() {
     return;
   }
 
-  write(1, input_data_message, strlen(input_data_message));
-  write(1, str_in_first_thread, strlen(str_in_first_thread));
+  main_thread_input_debug_message(str_in_first_thread);
 
   write(1, str, strlen(str));
   second_len = first_len;
@@ -63,8 +66,7 @@ void invert() {
     return;
   }
 
-  write(1, input_data_message, strlen(input_data_message));
-  write(1, str_in_first_thread, strlen(str_in_first_thread));
+  main_thread_input_debug_message(str_in_first_thread);
 
   write(1, str, strlen(str));
   second_len = first_len;
@@ -97,8 +99,7 @@ void replace_adjacent_characters() {
     return;
   }
 
-  write(1, input_data_message, strlen(input_data_message));
-  write(1, str_in_first_thread, strlen(str_in_first_thread));
+  main_thread_input_debug_message(str_in_first_thread);
 
   write(1, str, strlen(str));
   second_len = first_len;
@@ -107,12 +108,11 @@ void replace_adjacent_characters() {
 
   memset(str_in_first_thread, '\0', BUF_SIZE);
 
-
   pthread_mutex_unlock(&mutx1);
   pthread_cond_signal(&condx1);
 
   l = second_len - 2;
-  for (i = 0; i < l; i+=2) {
+  for (i = 0; i < l; i += 2) {
     c = str_in_second_thread[i];
     str_in_second_thread[i] = str_in_second_thread[i + 1];
     str_in_second_thread[i + 1] = c;
@@ -132,8 +132,7 @@ void to_koi() {
     return;
   }
 
-  write(1, input_data_message, strlen(input_data_message));
-  write(1, str_in_first_thread, strlen(str_in_first_thread));
+  main_thread_input_debug_message(str_in_first_thread);
 
   write(1, str, strlen(str));
   second_len = first_len;
@@ -141,7 +140,6 @@ void to_koi() {
   strncpy(str_in_second_thread, str_in_first_thread, second_len);
 
   memset(str_in_first_thread, '\0', BUF_SIZE);
-
 
   pthread_mutex_unlock(&mutx1);
   pthread_cond_signal(&condx1);
