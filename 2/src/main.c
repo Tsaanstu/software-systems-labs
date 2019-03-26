@@ -56,10 +56,6 @@ void read_commands() {
   size_t i = 0;
   write(1, answer[1], strlen(answer[1]));
   read(0, buf, 3);
-  ////////
-  write(1, "data is ", strlen("data is "));
-  write(1, buf, strlen(buf));
-  ///////
 
   for (i = 0; i < 2; i++) {
     mode = buf[i] - '0';
@@ -68,20 +64,5 @@ void read_commands() {
       exit(1);
     }
     modes[i] = mode;
-  }
-  if (modes[0] == 1 && modes[1] == 1) {
-    write(1, "OK 11\n", 6);
-  }
-
-  if (modes[0] == 1 && modes[1] == 2) {
-    write(1, "OK 12\n", 6);
-  }
-
-  if (modes[0] == 1 && modes[1] == 3) {
-    write(1, "OK 13\n", 6);
-  }
-
-  if (modes[0] == 1 && modes[1] == 4) {
-    write(1, "OK 14\n", 6);
   }
 }
