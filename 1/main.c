@@ -7,17 +7,22 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-int logical_expression(int x, int y, int z) {
-    return x && y && z;
+#define SIZE 4
+
+int logical_expression(int *pid) {
+  return pid[0] && pid[1] && pid[2] && pid[3];
 }
 
 int main(int argc, char **argv) {
-    int pid1 = 0, pid2 = 0, pid3 = 0, answer = 0;
-    pid1 = fork();
-    pid2 = fork();
-    pid3 = fork();
-    answer = logical_expression(pid1, pid2, pid3);
-    printf("%d %d %d = %d\n", pid1, pid2, pid3, answer);
-    while (wait(NULL) > 0);
-    return 0;
+  int *pid = (int*)calloc(SIZE, sizeof(int));
+  for (int i = 0; i < SIZE; ++i) {
+    pid[i] = fork();
+  }
+  int answer = logical_expression(pid);
+  for (int i = 0; i < SIZE; ++i) {
+    printf("%d ", pid[i]);
+  }
+  printf("= %d\n", answer);
+  while (wait(NULL) > 0);
+  return 0;
 }
