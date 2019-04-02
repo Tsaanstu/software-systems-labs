@@ -2,95 +2,94 @@
 // Created by tsaanstu on 27.03.19.
 //
 
+
+#include <stdio.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-/* hton, ntoh и проч. */
-#include <arpa/inet.h>
+#include <netdb.h>
 #include <memory.h>
-#include <stdio.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <string.h>
+#include <stdlib.h>
 
-int main(int argc, char * argv[])
-{
+#define SRV_PORT 1234  // порт сервера
+#define CLNT_PORT 1235  // порт клиента
+#define BUF_SIZE 4096  // размер буфера
+#define PATH_SIZE 64  // размер пути
 
-  /*объявляем сокет*/
-  int s = socket( AF_INET, SOCK_STREAM, 0 );
-  if(s < 0)
-  {
-    perror( "Error calling socket" );
-    return 0;
+#define TAR_C 64
+// размер команды архиватора
+#define RM "rm ./tar.tar"
+// команда удаления архива
+#define TAR "tar -c -f ./tar.tar "
+// команда архивации
+
+int main(int argc, char **argv) {
+  int s;
+  int from_len;
+  char buf[BUF_SIZE]; // буфер
+  char path[PATH_SIZE]; // путь
+  char *path_p;
+  int fd;
+  char tar[TAR_C]; // команда архивации
+  char host[TAR_C]; // адрес сервера
+  int count;
+  int size;
+  struct hostent *hp = NULL;
+  struct sockaddr_in clnt_sin, srv_sin;
+
+  s = socket(AF_INET, SOCK_STREAM, 0);
+  memset((char *) &clnt_sin, '\0', sizeof(clnt_sin));
+  clnt_sin.sin_family = AF_INET;
+  clnt_sin.sin_addr.s_addr = INADDR_ANY;
+  clnt_sin.sin_port = CLNT_PORT;
+  bind(s, (struct sockaddr *) &clnt_sin, sizeof(clnt_sin));
+  memcpy(host, argv[2], strlen(argv[2]));
+
+  * strchr(host, '@') = '\0';
+  memset((char *) &srv_sin, '\0', sizeof(srv_sin));
+  if ((hp = gethostbyname(host)) == NULL) { // получаем host
+    write(1, "Can't find ", 11);
+    write(1, host, strlen(host));
+    write(1, "\n", 1);
+    return 1;
+  }
+  srv_sin.sin_family = AF_INET;
+  memcpy((char *) &srv_sin.sin_addr, hp->h_addr, hp->h_length);
+  srv_sin.sin_port = SRV_PORT;
+  if (connect(s, (struct sockaddr *) &srv_sin, sizeof(srv_sin)) == -1) { // подключение
+    write(1, "Can't connect to ", 17);
+    write(1, host, strlen(host));
+    write(1, "\n", 1);
+    return 1;
   }
 
-  /*соединяемся по определённому порту с хостом*/
-  struct sockaddr_in peer;
-  peer.sin_family = AF_INET;
-  peer.sin_port = htons( 18666 );
-  peer.sin_addr.s_addr = inet_addr( "127.0.0.1" );
-  int result = connect( s, ( struct sockaddr * )&peer, sizeof( peer ) );
-  if( result )
-  {
-    perror( "Error calling connect" );
-    return 0;
-  }
+// парсинг аргументов программы
+  path_p=strstr(argv[2], "@");
+  path_p++;
+  memcpy(path, path_p, strlen(path_p));
+  write(1, path, strlen(path));
+  memcpy(tar, TAR, strlen(TAR));
+  memcpy(tar + strlen(tar), argv[1], strlen(argv[1]));
+  system(tar); // команда на архивацию
+  write(s, path, strlen(path));
+  write(1, path, strlen(path));
 
-  /*посылаем данные
-   *
-   * Если быть точным, данные не посланы, а записаны где-то в стеке, когда и как они будут
-   * отправлены реализации стека TCP/IP виднее. Зато мы сразу получаем управление, не
-   * дожидаясь у моря погоды.*/
-  char buf[] = "Hello, world!";
-  result = send( s, "Hello, world!", 13, 0);
-  if( result <= 0 )
-  {
-    perror( "Error calling send" );
-    return 0;
+  if ((fd = open("./tar.tar", O_RDONLY)) == -1) {
+    write(1, "File error\n", 11);
+    return 1;
   }
-  /* закрываем соединения для посылки данных */
-  if( shutdown(s, 1) < 0)
-  {
-    perror("Error calling shutdown");
-    return 0;
+  while (count = read(fd, buf, BUF_SIZE)) {
+    write(s, buf, count); // передаем архив на сервер
   }
-
-  /* читаем ответ сервера */
-  fd_set readmask;
-  fd_set allreads;
-  FD_ZERO( &allreads );
-  FD_SET( 0, &allreads );
-  FD_SET( s, &allreads );
-  for(;;)
-  {
-    readmask = allreads;
-    if( select(s + 1, &readmask, NULL, NULL, NULL ) <= 0 )
-    {
-      perror("Error calling select");
-      return 0;
-    }
-    if( FD_ISSET( s, &readmask ) )
-    {
-      char buffer[20];
-      memset(buffer, 0, 20*sizeof(char));
-      int result = recv( s, buffer, sizeof(buffer) - 1, 0 );
-      if( result < 0 )
-      {
-        perror("Error calling recv");
-        return 0;
-      }
-      if( result == 0 )
-      {
-        perror("Server disconnected");
-        return 0;
-      }
-      if(strncmp(buffer, "Hi, dear!", 9) == 0)
-        printf("Got answer. Success.\n");
-      else
-        perror("Wrong answer!");
-    }
-    if( FD_ISSET( 0, &readmask ) )
-    {
-      printf( "No server response" );
-      return 0;
-    }
-  }
-  return 0;
+  write(1, argv[1], strlen(argv[1]));
+  write(1, " is copied to the server\n", 25);
+  close(fd);
+  system(RM);
+// удаляем архив на клиенте
+  close (s);
+  return (0);
 }
