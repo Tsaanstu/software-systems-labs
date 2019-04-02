@@ -84,6 +84,7 @@ int main() {
       _mkdir(path);
     }
 
+    printf("______________\npath: %s\n______________\n", path);
     strcat(path, "/tar.tar"); // создаем получаемый архив
     write(1, path, strlen(path));
 //    if ((fd = open(path, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IXUSR) == -1)) {
