@@ -100,7 +100,7 @@ int main() {
 
     strcat(path, "/tar.tar"); // создаем получаемый архив
 
-
+    printf("path: %s", path);
     fd = open(path, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IXUSR);
     if (fd == -1) {
       write(1, "File error\n", 11);
