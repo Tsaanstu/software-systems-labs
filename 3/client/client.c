@@ -1,8 +1,3 @@
-//
-// Created by tsaanstu on 27.03.19.
-//
-
-
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -84,6 +79,8 @@ int main(int argc, char **argv) {
   write(s, path_to_file, strlen(path_to_file));
   write(1, path_to_file, strlen(path_to_file));
 
+  printf("looooooooooooooool\n");
+
   if ((fd = open("./tar.tar", O_RDONLY)) == -1) {
     write(1, "File error\n", 11);
     return 1;
@@ -96,106 +93,5 @@ int main(int argc, char **argv) {
   close(fd);
   system(RM);
   close(s);
-
-
-  /* закрываем соединения для посылки данных */
-//  if (shutdown(s, 1) < 0) {
-//    perror("Error calling shutdown");
-//    return 0;
-//  }
-
-//  /* читаем ответ сервера */
-//  fd_set readmask;
-//  fd_set allreads;
-//  FD_ZERO(&allreads);
-//  FD_SET(0, &allreads);
-//  FD_SET(s, &allreads);
-
-
-  //  for (;;) {
-//    readmask = allreads;
-//    if (select(s + 1, &readmask, NULL, NULL, NULL) <= 0) {
-//      perror("Error calling select");
-//      return 0;
-//    }
-//    if (FD_ISSET(s, &readmask)) {
-//      char buffer[20];
-//      memset(buffer, 0, 20 * sizeof(char));
-//      int result = recv(s, buffer, sizeof(buffer) - 1, 0);
-//      if (result < 0) {
-//        perror("Error calling recv");
-//        return 0;
-//      }
-//      if (result == 0) {
-//        perror("Server disconnected");
-//        return 0;
-//      }
-//      if (strncmp(buffer, "Hi, dear!", 9) == 0)
-//        printf("Got answer. Success.\n");
-//      else
-//        perror("Wrong answer!");
-//    }
-//    if (FD_ISSET(0, &readmask)) {
-//      printf("No server response");
-//      return 0;
-//    }
-//  }
-
   return 0;
 }
-
-
-
-
-
-
-//int main(int argc, char **argv) {
-//  int s;
-//  int from_len;
-//  char path[PATH_SIZE]; // путь
-//  char *path_p;
-//  int fd;
-//  char tar[TAR_C]; // команда архивации
-//  char host[TAR_C]; // адрес сервера
-//  int size;
-//  struct hostent *hp = NULL;
-//  struct sockaddr_in clnt_sin, srv_sin;
-//
-//  s = socket(AF_INET, SOCK_STREAM, 0);
-//  memset((char *) &clnt_sin, '\0', sizeof(clnt_sin));
-//
-//  clnt_sin.sin_family = htons(AF_INET);
-//  clnt_sin.sin_addr.s_addr = INADDR_ANY;
-//  clnt_sin.sin_port = htons(CLNT_PORT);
-//
-//  bind(s, (struct sockaddr *) &clnt_sin, sizeof(clnt_sin));
-//  memcpy(host, argv[2], strlen(argv[2]));
-//
-//  * strchr(host, '@') = '\0';
-//  memset((char *) &srv_sin, '\0', sizeof(srv_sin));
-//  if ((hp = gethostbyname(host)) == NULL) { // получаем host
-//    write(1, "Can't find ", 11);
-//    write(1, host, strlen(host));
-//    write(1, "\n", 1);
-//    return 1;
-//  }
-//  srv_sin.sin_family = htons(AF_INET);
-////  memcpy((char *) &srv_sin.sin_addr, hp->h_addr, hp->h_length);
-//  srv_sin.sin_port = htons(SRV_PORT);
-//  srv_sin.sin_addr.s_addr = inet_addr( "127.0.0.1" );
-//
-//  if (connect(s, (struct sockaddr *) &srv_sin, sizeof(srv_sin))) { // подключение
-//    write(1, "Can't connect to ", 17);
-//    write(1, host, strlen(host));
-//    write(1, "\n", 1);
-//    return 1;
-//  }
-//
-//// парсинг аргументов программы
-//  path_p=strstr(argv[2], "@");
-//  path_p++;
-//  memcpy(path, path_p, strlen(path_p));
-//  write(1, path, strlen(path));
-
-//  return (0);
-//}

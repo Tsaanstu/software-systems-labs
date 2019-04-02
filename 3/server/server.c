@@ -12,12 +12,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+
 #define SRV_PORT 1234 // порт подключения
 #define BUF_SIZE 4096 // размер буфера
-#define PATH_SIZE 64 // размер пути
+#define PATH_SIZE 128 // размер пути
 #define RM "rm " // стандартная утилита удаления (для вызова в системе)
 #define TAR "tar -x -f " // утилита архиватор
-#define TAR_C 128 // длина команды tar
+#define TAR_C 256 // длина команды tar
 
 struct stat st = {0};
 int s, s_new = 0;
@@ -60,6 +61,22 @@ void siginthandler() { // обработчик Ctrl+C, грамотное отк
   exit(0);
 }
 
+char *get_filename(char *path) {
+  char *dir = (char *) malloc(strlen(path));
+  char *file = strrchr(path, '/');
+  if (file != NULL) {
+    strcpy(dir, file + 1);
+  } else {
+    strcpy(dir, path);
+  }
+
+  char *filename = strchr(dir, '.');
+  if (filename != NULL) {
+    *filename = '_';
+  }
+  return dir;
+}
+
 int main() {
   struct sockaddr_in sin;
   struct sockaddr_in from_sin;
@@ -73,24 +90,17 @@ int main() {
   listen(s, 3); // очередь на сервер – 3 клиента
 
   while (1) {
-    printf("wait...\n");
     from_len = sizeof(from_sin);
     s_new = accept(s, (struct sockaddr *) &from_sin, &from_len);
-    path_l = read(s_new,
-                  path, PATH_SIZE);
-    write(1, path, strlen(path));
-    write(1, " - writing...\n", 14);
-    if (stat(path, &st) == -1) { // если директории нет - создать
+    path_l = read(s_new, path, PATH_SIZE);
+
+    if (stat(path, &st) == -1) {
       _mkdir(path);
     }
 
-    printf("______________\npath: %s\n______________\n", path);
     strcat(path, "/tar.tar"); // создаем получаемый архив
-    write(1, path, strlen(path));
-//    if ((fd = open(path, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IXUSR) == -1)) {
-//      write(1, "File error\n", 11);
-//      return 1;
-//    }
+
+
     fd = open(path, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IXUSR);
     if (fd == -1) {
       write(1, "File error\n", 11);
@@ -107,7 +117,7 @@ int main() {
     memcpy(tar_path, path, strlen(path));
     *(strrchr(tar_path, '/') + 1) = '\0';
     memcpy(tar + strlen(TAR) + strlen(path) + 4, tar_path, strlen(tar_path));
-// write(1,tar,strlen(tar));
+
     system(tar); // создание команды распаковки и ее выполнение
     memcpy(rm_tar, RM, strlen(RM)); // удаление архива
     memcpy(rm_tar + strlen(RM), path, strlen(path));
