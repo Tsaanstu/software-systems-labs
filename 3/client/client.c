@@ -12,88 +12,82 @@
 #include <arpa/inet.h>
 #include <string.h>
 
-#define SRV_PORT 1234  // порт сервера
-#define CLNT_PORT 1235  // порт клиента
-#define BUF_SIZE 4096  // размер буфера
-#define PATH_SIZE 64  // размер пути
+#define SRV_PORT 1234
+#define CLNT_PORT 1235
+#define BUF_SIZE 2048
+#define PATH_SIZE 64
 
-// размер команды архиватора
-#define RM "rm ./tar.tar"
-// команда удаления архива
-#define TAR "tar -c -f ./tar.tar"
-// команда архивации
+#define RM "rm file_storage.tar"
+#define TAR "tar -c -f ./file_storage.tar "
 #define ERROR -1
 
 int main(int argc, char **argv) {
-  /*объявляем сокет*/
+  system("clear");
+  int sockfd = 0;
+  int bytesReceived = 0;
+  char recvBuff[1024];
+  memset(recvBuff, '0', sizeof(recvBuff));
+  struct sockaddr_in serv_addr;
 
-  if (argc < 3) {
-    perror("Bad arguments. Example: cprem path.to.src.file host@path.to.dst.dir\n");
-    return ERROR;
-  }
-
-  char *buf = calloc(BUF_SIZE, sizeof(char *)); // буфер
-  int count;
-
-//  printf("cmd: %s\n", TAR);
-  size_t TAR_C = strlen(TAR) + strlen(argv[1]);
-
-  char tar[TAR_C]; // команда архивации
-  int fd = 0;
-
-  char *path_to_file = (char *) malloc(strlen(argv[1]));
-  if (path_to_file == NULL) {
-    perror("Memory error\n");
-    return ERROR;
-  }
-  strcpy(path_to_file, argv[1]);
-//  printf("path to file: %s\n", path_to_file);
-
-  size_t port = atoi(argv[2]);
-//  printf("port: %ld\n", port);
-
-  char *url = (char *) malloc(strlen(strchr(argv[2], '@') + 1));
-  if (path_to_file == NULL) {
-    perror("Pars error\n");
-    return ERROR;
-  }
-  strcpy(url, strchr(argv[2], '@') + 1);
-//  printf("url: %s\n", url);
-
-  int s = socket(AF_INET, SOCK_STREAM, 0);
-  if (s < 0) {
-    perror("Error calling socket");
-    return 0;
-  }
-  /*соединяемся по определённому порту с хостом*/
-  struct sockaddr_in peer;
-  peer.sin_family = AF_INET;
-  peer.sin_port = htons(port);
-  peer.sin_addr.s_addr = inet_addr(url);
-  int result = connect(s, (struct sockaddr *) &peer, sizeof(peer));
-  if (result) {
-    perror("Error calling connect");
-    return 0;
-  }
-
-
-
-  memcpy(tar, TAR, strlen(TAR));
-  memcpy(tar + strlen(tar), argv[1], strlen(argv[1]));
-  system(tar); // команда на архивацию
-  write(s, path_to_file, strlen(path_to_file));
-
-  if ((fd = open("./tar.tar", O_RDONLY)) == -1) {
-    write(1, "File error\n", 11);
+  /* Create a socket first */
+  if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    printf("\n Error : Could not create socket \n");
     return 1;
   }
-  while (count = read(fd, buf, BUF_SIZE)) {
-    write(s, buf, count); // передаем архив на сервер
+
+  /* Initialize sockaddr_in data structure */
+  char ip[50];
+  strcpy(ip, argv[1]);
+  serv_addr.sin_family = AF_INET;
+  serv_addr.sin_port = htons(SRV_PORT); // port
+  serv_addr.sin_addr.s_addr = inet_addr(ip);
+
+  /* Attempt a connection */
+  if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+    printf("\n Error : Connect Failed \n");
+    return 1;
   }
-  write(1, argv[1], strlen(argv[1]));
-  write(1, " is copied to the server\n", 25);
-  close(fd);
-   system(RM);
-  close(s);
+
+  printf("Connected to ip: %s : %d\n", inet_ntoa(serv_addr.sin_addr), ntohs(serv_addr.sin_port));
+
+  size_t TAR_C = strlen(TAR) + strlen(argv[2]);
+  char *tar = (char *) malloc(TAR_C); // команда архивации
+  memcpy(tar, TAR, strlen(TAR));
+  memcpy(tar + strlen(tar), argv[2], strlen(argv[2]));
+  system(tar); // команда на архивацию
+
+
+  printf(":: %s\n", tar);
+
+  FILE *fp = fopen("file_storage.tar", "rb");
+  if (fp == NULL) {
+    printf("File open error");
+    return 1;
+  }
+
+  system("ls");
+  printf("Sending...\n");
+  while (1) {
+    unsigned char buff[1024] = {0};
+    int nread = fread(buff, 1, 1024, fp);
+
+    if (nread > 0) {
+      write(sockfd, buff, nread);
+    }
+
+    if (nread < 1024) {
+      if (feof(fp)) {
+        printf("End of file\n");
+      }
+      if (ferror(fp))
+        printf("Error reading\n");
+      break;
+    }
+  }
+  printf("Closing Connection\n");
+  close(sockfd);
+  shutdown(sockfd, SHUT_WR);
+
+  system(RM);
   return 0;
 }
