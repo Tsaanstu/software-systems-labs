@@ -19,7 +19,7 @@ int connfd;
 void upload_text(int x, int y);
 void siginthandler();
 
-int main(int argc, char *argv[]) {
+int main(int argc, char **argv) {
   system("clear");
   connfd = 0;
   pthread_t tid;
