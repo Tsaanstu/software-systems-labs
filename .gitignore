@@ -1,5 +1,2 @@
 .idea/
-1/a.out
-2/main.out
-3/client/client
-3/server/server
+*.out
